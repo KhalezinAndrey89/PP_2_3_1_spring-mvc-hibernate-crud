@@ -32,11 +32,8 @@ public class HibernateConfig {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
         em.setPackagesToScan("web");
-
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         em.setJpaProperties(additionalProperties());
-
         return em;
     }
 
@@ -51,24 +48,23 @@ public class HibernateConfig {
     }
 
     @Bean
+    public Properties additionalProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("db.hbm2ddl.auto"));
+        properties.setProperty("hibernate.dialect", env.getProperty("db.dialect"));
+        properties.setProperty("hibernate.show_sql", env.getProperty("db.show_sql"));
+        return properties;
+    }
+
+    @Bean
     public PlatformTransactionManager transactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-
         return transactionManager;
     }
 
     @Bean
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    Properties additionalProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("db.hbm2ddl.auto"));
-        properties.setProperty("hibernate.dialect", env.getProperty("db.dialect"));
-        properties.setProperty("hibernate.show_sql", env.getProperty("db.show_sql"));
-
-        return properties;
     }
 }
